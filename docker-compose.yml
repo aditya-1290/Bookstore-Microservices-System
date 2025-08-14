@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  # Existing services...
+  book-service:
+    build: ./book-service
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./book-service:/app
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "8002:8002"
+    depends_on:
+      - rabbitmq
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./order-service:/app
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "8003:8003"
+    depends_on:
+      - rabbitmq
+      - order-service
+    environment:
+      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - ./notification-service:/app
+
+volumes:
+  rabbitmq_data:

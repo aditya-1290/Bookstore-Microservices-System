@@ -1,0 +1,5 @@
+*.db
+*.pyc
+__pycache__/
+micro_env/
+*.cpython-313.pyc
